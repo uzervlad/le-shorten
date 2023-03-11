@@ -30,7 +30,7 @@ app.post('/generate', (req, res) => {
 
   db.run("INSERT INTO links (id, url) VALUES (?, ?)", [id, req.body.url], (err) => {
     if(err)
-      res.send({ error: "Couldn't generate link" });
+      res.status(500).send({ error: "Couldn't generate link" });
     else
       res.send({ id });
   })
