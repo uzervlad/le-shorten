@@ -13,8 +13,11 @@
     <h1>Octo's URL shortener</h1>
     <p class="lead">No, you can not use it. Don't even try.</p>
     <div class="mb-3">
-      <label for="url-input" class="form-label">URL:</label>
-      <input type="text" class="form-control" id="url-input" placeholder="URL to shorten...">
+      <label for="url-input" class="form-label">Shorten:</label>
+      <div class="input-group">
+        <input type="text" class="form-control" id="url-input" placeholder="URL to shorten...">
+        <input type="text" class="form-control" id="id-input" placeholder="ID (optional)">
+      </div>
     </div>
     <button id="create-btn" class="btn btn-primary" onclick="createUrl()">Generate</button>
     <br />
@@ -23,6 +26,7 @@
 </body>
 <script>
   const urlInput = document.querySelector("#url-input");
+  const idInput = document.querySelector("#id-input");
   const createBtn = document.querySelector("#create-btn");
   const result = document.querySelector("#result");
 
@@ -30,6 +34,7 @@
     createBtn.setAttribute("disabled", "");
     createBtn.innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div>`;
 
+    let id = idInput.value;
     let url = urlInput.value;
 
     let token = localStorage.getItem('token');
@@ -38,7 +43,7 @@
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ token, url }),
+      body: JSON.stringify({ token, id, url }),
     })
       .then(r => {
         if(r.status == 200) return r.json();

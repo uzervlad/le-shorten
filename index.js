@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const ALPHABET = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890-_".split('').sort(_ => Math.random() - 0.5);
 function generateId() {
-  const SIZE = 8;
+  const SIZE = 10;
   let id = "";
   for(let i = 0; i < SIZE; i++)
     id += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
@@ -26,10 +26,13 @@ app.post('/generate', (req, res) => {
   if(req.body.token != TOKEN)
     return res.status(403).send({ error: "fuck off lmao" });
 
-  let id = generateId();
+  let id = req.body.id || generateId();
 
   db.run("INSERT INTO links (id, url) VALUES (?, ?)", [id, req.body.url], (err) => {
-    res.send({ id });
+    if(err)
+      res.send({ error: "Couldn't generate link" });
+    else
+      res.send({ id });
   })
 });
 
@@ -42,5 +45,5 @@ app.get('/:id', (req, res) => {
   });
 });
 
-db.run(`CREATE TABLE IF NOT EXISTS links (id text, url text, uses int DEFAULT 0);`);
+db.run(`CREATE TABLE IF NOT EXISTS links (id text PRIMARY KEY, url text, uses int DEFAULT 0);`);
 app.listen(9310); 
