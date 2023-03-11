@@ -23,7 +23,6 @@ function generateId() {
 }
 
 app.post('/generate', (req, res) => {
-  console.log(req.body);
   if(req.body.token != TOKEN)
     return res.status(403).send({ error: "fuck off lmao" });
 
@@ -39,8 +38,9 @@ app.get('/:id', (req, res) => {
     if(!row)
       return res.status(404).send("unknown link");
     res.redirect(row.url);
+    db.run("UPDATE links SET uses = uses + 1 WHERE id = ?", [req.params.id]);
   });
 });
 
-db.run(`CREATE TABLE IF NOT EXISTS links (id text, url text);`);
+db.run(`CREATE TABLE IF NOT EXISTS links (id text, url text, uses int DEFAULT 0);`);
 app.listen(9310); 
