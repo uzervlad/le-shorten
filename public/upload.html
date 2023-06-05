@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+  <title>le shorten</title>
+</head>
+<body>
+  <div class="container">
+    <h1>Octo's file uploader</h1>
+    <p class="lead">No, you can not use it. Don't even try.</p>
+    <div class="mb-3">
+      <label for="file-input" class="form-label">Upload:</label>
+      <div class="input-group">
+        <input type="file" class="form-control" id="file-input">
+        <input type="text" class="form-control" id="id-input" placeholder="ID (optional)">
+      </div>
+    </div>
+    <button id="create-btn" class="btn btn-primary" onclick="createUrl()">Generate</button>
+    <br />
+    <div id="result" class="container mt-4"></div>
+  </div>
+</body>
+<script>
+  const fileInput = document.querySelector("#file-input");
+  const idInput = document.querySelector("#id-input");
+  const createBtn = document.querySelector("#create-btn");
+  const result = document.querySelector("#result");
+
+  function createUrl() {
+    createBtn.setAttribute("disabled", "");
+    createBtn.innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div>`;
+
+    const data = new FormData();
+    data.append('id', idInput.value);
+    data.append('token', localStorage.getItem('token'));
+    data.append('file', fileInput.files[0]);
+
+    fetch('/upload', {
+      method: "POST",
+      body: data,
+    })
+      .then(r => {
+        if(r.status == 200) return r.json();
+        throw r.json();
+      })
+      .then(r => {
+        console.log(r);
+        result.innerHTML = `
+        <div class="alert alert-success" role="alert">
+          Your link is: 
+          <a href="#" class="alert-link" onclick="copy('${r.id}');event.preventDefault()">${window.location.protocol}//${window.location.host}/${r.id}</a>
+        </div>`;
+        copy(r.id);
+      })
+      .catch(e => {
+        e.then(r => {
+          result.innerHTML = `
+          <div class="alert alert-danger" role="alert">
+            ${r.error}
+          </div>`;
+        })
+      })
+      .finally(() => {
+        createBtn.removeAttribute("disabled");
+        createBtn.innerHTML = "Generate";
+      });
+  }
+
+  function copy(id) {
+    navigator.clipboard.writeText(`${window.location.protocol}//${window.location.host}/${id}`);
+  }
+</script>
+</html>

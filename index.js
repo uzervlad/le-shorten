@@ -2,11 +2,16 @@ require('dotenv').config();
 
 const TOKEN = process.env.TOKEN;
 
+const path = require('path');
+
 const sqlite = require('sqlite3');
 const db = new sqlite.Database("db.sqlite");
 
 const express = require('express');
 const app = express();
+const multer = require('multer');
+const { writeFileSync } = require('fs');
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(express.static('public'));
 app.use(express.json());
@@ -36,11 +41,34 @@ app.post('/generate', (req, res) => {
   })
 });
 
+app.post('/upload', upload.single('file'), (req, res) => {
+  console.log(req.body);
+  console.log(req.file, req.files);
+  
+  if(req.body.token != TOKEN)
+    return res.status(403).send({ error: "fuck off lmao" });
+
+  let id = req.body.id || generateId();
+
+  db.run("INSERT INTO links (id, url, is_file) VALUES (?, ?, 1)", [id, req.file.originalname], (err) => {
+    if(err)
+      return res.status(500).send({ error: "Couldn't generate link" });
+    
+    writeFileSync(`./uploads/${id}`, req.file.buffer);
+    res.send({ id });
+  });
+});
+
 app.get('/:id', (req, res) => {
-  db.get("SELECT url FROM links WHERE id = ?", [req.params.id], (_, row) => {
+  db.get("SELECT url, is_file FROM links WHERE id = ?", [req.params.id], (_, row) => {
     if(!row)
       return res.status(404).send("unknown link");
-    res.redirect(row.url);
+    console.log(row);
+    if(row.is_file) {
+      res.download(`./uploads/${req.params.id}`, row.url);
+    } else {
+      res.redirect(row.url);
+    }
     db.run("UPDATE links SET uses = uses + 1 WHERE id = ?", [req.params.id]);
   });
 });
