@@ -42,9 +42,6 @@ app.post('/generate', (req, res) => {
 });
 
 app.post('/upload', upload.single('file'), (req, res) => {
-  console.log(req.body);
-  console.log(req.file, req.files);
-  
   if(req.body.token != TOKEN)
     return res.status(403).send({ error: "fuck off lmao" });
 
