@@ -60,7 +60,6 @@ app.get('/:id', (req, res) => {
   db.get("SELECT url, is_file FROM links WHERE id = ?", [req.params.id], (_, row) => {
     if(!row)
       return res.status(404).send("unknown link");
-    console.log(row);
     if(row.is_file) {
       res.download(`./uploads/${req.params.id}`, row.url);
     } else {
