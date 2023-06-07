@@ -47,7 +47,9 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
   let id = req.body.id || generateId();
 
-  db.run("INSERT INTO links (id, url, is_file) VALUES (?, ?, 1)", [id, req.file.originalname], (err) => {
+  let filename = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
+
+  db.run("INSERT INTO links (id, url, is_file) VALUES (?, ?, 1)", [id, filename], (err) => {
     if(err)
       return res.status(500).send({ error: "Couldn't generate link" });
     
