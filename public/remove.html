@@ -49,10 +49,10 @@
         throw r.json();
       })
       .then(r => {
-        console.log(r);
+        let status = r.ok ? `Link ${id} has been removed` : `Link ${id} does not exist`;
         result.innerHTML = `
         <div class="alert alert-success" role="alert">
-          Link ${id} has been removed
+          ${status}
         </div>`;
         copy(r.id);
       })

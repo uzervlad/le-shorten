@@ -65,6 +65,7 @@ app.post('/remove', (req, res) => {
   let { id } = req.body;
 
   db.get("SELECT is_file FROM links WHERE id = ?", [id], (_, row) => {
+    if(!row) return res.send({ ok: false });
     if(row.is_file) {
       try {
         rmSync(`./uploads/${id}`);
