@@ -9,39 +9,40 @@
   <title>le shorten</title>
 </head>
 <body>
+
   <div class="container">
-    <h1>Octo's file uploader <a href="/">/</a> <a href="/remove.html">/</a></h1>
+    <h1>Octo's URL shortener <a href="/">/</a> <a href="/upload.html">/</a></h1>
     <p class="lead">No, you can not use it. Don't even try.</p>
     <div class="mb-3">
-      <label for="file-input" class="form-label">Upload:</label>
+      <label for="id-input" class="form-label">Remove:</label>
       <div class="input-group">
-        <input type="file" class="form-control" id="file-input">
-        <input type="text" class="form-control" id="id-input" placeholder="ID (optional)">
+        <input type="text" class="form-control" id="id-input" placeholder="ID">
       </div>
     </div>
-    <button id="create-btn" class="btn btn-primary" onclick="createUrl()">Generate</button>
+    <button id="create-btn" class="btn btn-primary" onclick="removeUrl()">Remove</button>
     <br />
     <div id="result" class="container mt-4"></div>
   </div>
 </body>
 <script>
-  const fileInput = document.querySelector("#file-input");
+  const urlInput = document.querySelector("#url-input");
   const idInput = document.querySelector("#id-input");
   const createBtn = document.querySelector("#create-btn");
   const result = document.querySelector("#result");
 
-  function createUrl() {
+  function removeUrl() {
     createBtn.setAttribute("disabled", "");
     createBtn.innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div>`;
 
-    const data = new FormData();
-    data.append('id', idInput.value);
-    data.append('token', localStorage.getItem('token'));
-    data.append('file', fileInput.files[0]);
+    let id = idInput.value;
 
-    fetch('/upload', {
+    let token = localStorage.getItem('token');
+    fetch('/remove', {
       method: "POST",
-      body: data,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ token, id }),
     })
       .then(r => {
         if(r.status == 200) return r.json();
@@ -51,8 +52,7 @@
         console.log(r);
         result.innerHTML = `
         <div class="alert alert-success" role="alert">
-          Your link is: 
-          <a href="#" class="alert-link" onclick="copy('${r.id}');event.preventDefault()">${window.location.protocol}//${window.location.host}/${r.id}</a>
+          Link ${id} has been removed
         </div>`;
         copy(r.id);
       })
@@ -66,7 +66,7 @@
       })
       .finally(() => {
         createBtn.removeAttribute("disabled");
-        createBtn.innerHTML = "Generate";
+        createBtn.innerHTML = "Remove";
       });
   }
 

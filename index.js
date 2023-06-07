@@ -10,7 +10,7 @@ const db = new sqlite.Database("db.sqlite");
 const express = require('express');
 const app = express();
 const multer = require('multer');
-const { writeFileSync } = require('fs');
+const { writeFileSync, rmSync } = require('fs');
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(express.static('public'));
@@ -55,6 +55,23 @@ app.post('/upload', upload.single('file'), (req, res) => {
     
     writeFileSync(`./uploads/${id}`, req.file.buffer);
     res.send({ id });
+  });
+});
+
+app.post('/remove', (req, res) => {
+  if(req.body.token != TOKEN)
+    return res.status(403).send({ error: "fuck off lmao" });
+
+  let { id } = req.body;
+
+  db.get("SELECT is_file FROM links WHERE id = ?", [id], (_, row) => {
+    if(row.is_file) {
+      try {
+        rmSync(`./uploads/${id}`);
+      } catch {}
+    }
+    db.run("DELETE FROM links WHERE id = ?", [id]);
+    res.send({ ok: true });
   });
 });
 
